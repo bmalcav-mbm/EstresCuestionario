@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cuestionario de Evaluación de Estrés</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 1rem;
+            box-sizing: border-box;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+            max-width: 800px;
+            width: 100%;
+        }
+        .question-card {
+            background-color: #F5F5DC; /* Fondo beige para cada pregunta */
+            border: 1px solid #e2e8f0;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .question-card:last-of-type {
+            margin-bottom: 1.5rem;
+        }
+        .question-text {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0;
+            flex-grow: 1;
+            padding-right: 1rem;
+        }
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-shrink: 0;
+        }
+        .radio-label {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0;
+            cursor: pointer;
+            color: #4a5568;
+        }
+        .radio-label input[type="radio"] {
+            margin-right: 0.5rem;
+            accent-color: #4c51bf;
+        }
+        /* Media query para pantallas más pequeñas */
+        @media (max-width: 640px) {
+            .question-card {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .question-text {
+                margin-bottom: 0.5rem;
+                padding-right: 0;
+            }
+            .radio-group {
+                width: 100%;
+                justify-content: flex-start;
+            }
+        }
+
+        .submit-button {
+            background-color: #4c51bf;
+            color: #ffffff;
+            font-weight: 700;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            font-size: 1.125rem;
+        }
+        .submit-button:hover {
+            background-color: #5a62e0;
+        }
+        .result-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background-color: #e0f2fe;
+            border-radius: 0.75rem;
+            border: 1px solid #90cdf4;
+            color: #2b6cb0;
+            font-weight: 600;
+            text-align: center;
+            display: none;
+        }
+        .result-section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #2b6cb0;
+        }
+        .result-section p {
+            font-size: 1.1rem; /* Ajuste para un texto más compacto */
+            margin-bottom: 0.3rem; /* Ajuste para un texto más compacto */
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .close-button {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .stress-level {
+            font-size: 1.15rem; /* Ajuste para un texto más compacto */
+            font-weight: 700;
+            margin-top: 0.5rem; /* Ajuste para un texto más compacto */
+            color: #007bff; /* Color por defecto */
+        }
+        .stress-level.leve { color: #28a745; } /* Verde para leve */
+        .stress-level.moderado { color: #ffc107; } /* Amarillo para moderado */
+        .stress-level.elevado { color: #dc3545; } /* Rojo para elevado */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Cuestionario de Evaluación de Estrés</h1>
+        <form id="quizForm">
+            <!-- Las preguntas se generarán aquí con JavaScript -->
+        </form>
+        <button id="submitQuiz" class="submit-button">Calificar Cuestionario</button>
+
+        <div id="resultSection" class="result-section">
+            <h2>Resultados por Categoría</h2>
+            <div id="categoryResults">
+                <!-- Los resultados de las categorías se generarán aquí -->
+            </div>
+        </div>
+
+        <!-- Modal para mensajes -->
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close-button">&times;</span>
+                <p id="modalMessage"></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Definición de las preguntas
+        const questions = [
+            // Preguntas 1-46 (índices 0-45)
+            "Ha sentido calambres en el cuerpo.",
+            "Ha sentido molestias estomacales.",
+            "Al despertar siente tensa la cara o la mandibula.",
+            "Ha notado sequedad en la boca.",
+            "Padece usted de jaqueca.",
+            "Siente débiles las rodillas al caminar.",
+            "Ha tenido dificultad, sin causa aparente, para hablar o pronunciar palabras.",
+            "Ha sentido que las cosas que hace son dificiles o complicadas.",
+            "A pesar de que oye bien, necesita que la repitan las cosas.",
+            "Sin hacer ejercicio fisico, suda más de lo normal.",
+            "Siente dolores musculares.",
+            "Se le dificulta concentrarse en lo que hace.",
+            "Se le dificulta relajarse o estar tranquilo.",
+            "Se le interrumpen las ideas o pensamientos fácilmente.",
+            "Siente que todo lo puede hacer, siempre y cuando usted tenga el control.",
+            "Ha tenido la sensación, sin causa alguna, de inquietud o desasosiego.",
+            "Se le olvidan las cosas, se le dificulta recordar fechas, nombres, actividades.",
+            "Ha sentido molestias en el pecho.",
+            "Ha notado que le faltan las ideas más que antes.",
+            "Ha tenido sensaciones de miedo o susto.",
+            "Ha sentido palpitaciones fuertes en el corazón.",
+            "Se cansa más fácilmente que antes.",
+            "Se le dificulta caminar o hacer ejercicio.",
+            "Le falta el apetito o siente desgano por la comida.",
+            "Se ruboriza o \"chilla\" con facilidad.",
+            "Ha sentido ardor en el estómago.",
+            "Pierde el hilo de la conversación.",
+            "Le brincan los músculos del pecho.",
+            "Ha sentido como un vacío en el estómago.",
+            "Ha tenido temblor en los párpados.",
+            "Padece de estreñimiento o de deposiciones muy espaciadas.",
+            "Ha estado de mal humor o muy irritable.",
+            "Tiene ideas o pensamientos que lo perturban.",
+            "Siente ganas de ir al baño más de lo normal.",
+            "Le falta la respiración o siente ahogo.",
+            "Ha sentido, sin ninguna causa. adormecimiento en los brazos o manos.",
+            "Se asusta con regularidad.",
+            "Ha sentido dolor en espalda o cuello.",
+            "Ha tenido sensación de escalofrios súbitos.",
+            "Tiene ideas que no se apartan de su mente.",
+            "Le sudan, más de lo normal, las manos o los pies",
+            "Ha sentido que se le paralizan partes del cuerpo",
+            "Se distrae fácilmente",
+            "Se le inflaman las manos o pies",
+            "Se despierta durante la noche",
+            "Ha sentido dolor de cabeza",
+
+            // Preguntas 47-50
+            "Piensa, antes de dormirse, en una misma cosa",
+            "Siente temor a algo sin saber por qué",
+            "Piensa mucho las cosas antes de hacerlas",
+            "Se despierta cansado o fatigado",
+
+            // Preguntas 51-60
+            "Le cuesta concentrarse en lo que hace.",
+            "Puede estar quieto en un mismo lugar.",
+            "Siente pérdida de la memoria.",
+            "Se marea con regularidad.",
+            "Se siente débil y con sueño.",
+            "Siente zumbidos o ruidos en los oidos.",
+            "Ha perdido peso más de lo normal.",
+            "Ha sentido, sin causa alguna, debilidad en algunas partes del cuerpo.",
+            "Le tiemblan las manos o partes del cuerpo regularmente.",
+            "Necesita hacer las cosas más de una vez para estar seguro."
+        ];
+
+        // Mapeo de preguntas a categorías según la "HOJA DE CORRECCION DEL INSTRUMENTO"
+        // Cada array contiene los NÚMEROS de pregunta (1-indexados) que pertenecen a esa categoría.
+        const categories = {
+            "MOTOR": [1, 11, 30, 52, 3, 13, 38, 55, 5, 22, 42, 58, 6, 23, 44, 59, 7, 28, 50, 60],
+            "COGNITIVO-CONDUCTUAL": [8, 17, 33, 48, 9, 19, 37, 49, 12, 20, 40, 51, 14, 27, 43, 53, 15, 32, 47, 56],
+            "NEURO-VEGETATIVO": [2, 21, 31, 41, 4, 24, 34, 45, 10, 25, 35, 46, 16, 26, 36, 54, 18, 29, 39, 57]
+        };
+
+        // El número máximo de preguntas por categoría es 20, según el modelo de corrección
+        const maxQuestionsPerCategory = 20;
+
+        const quizForm = document.getElementById('quizForm');
+        const submitQuizButton = document.getElementById('submitQuiz');
+        const resultSection = document.getElementById('resultSection');
+        const categoryResultsDiv = document.getElementById('categoryResults');
+
+        // Modal elements
+        const modal = document.getElementById('myModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const closeButton = document.getElementsByClassName('close-button')[0];
+
+        // Function to display modal message
+        function showModal(message) {
+            modalMessage.textContent = message;
+            modal.style.display = 'flex';
+        }
+
+        // Close modal when close button is clicked
+        closeButton.onclick = function() {
+            modal.style.display = 'none';
+        }
+
+        // Close modal when clicking outside of it
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Generar las preguntas dinámicamente
+        function generateQuiz() {
+            questions.forEach((questionText, index) => {
+                const questionNumber = index + 1;
+                const questionCard = document.createElement('div');
+                questionCard.className = 'question-card';
+                questionCard.innerHTML = `
+                    <p class="question-text">${questionNumber}. ${questionText}</p>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="question${questionNumber}" value="yes" required> Sí
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="question${questionNumber}" value="no"> No
+                        </label>
+                    </div>
+                `;
+                quizForm.appendChild(questionCard);
+            });
+        }
+
+        // Función para interpretar el nivel de estrés
+        function interpretStressLevel(percentage) {
+            let interpretation = "";
+            let className = "";
+            if (percentage >= 0 && percentage <= 25) {
+                interpretation = "leve";
+                className = "leve";
+            } else if (percentage >= 26 && percentage <= 50) {
+                interpretation = "moderado";
+                className = "moderado";
+            } else if (percentage >= 51 && percentage <= 100) {
+                interpretation = "elevado";
+                className = "elevado";
+            } else {
+                interpretation = "no determinado";
+                className = "";
+            }
+            return { text: interpretation, class: className };
+        }
+
+        // Calificar el cuestionario
+        submitQuizButton.addEventListener('click', () => {
+            const categoryScores = {
+                "MOTOR": 0,
+                "COGNITIVO-CONDUCTUAL": 0,
+                "NEURO-VEGETATIVO": 0
+            };
+            const maxQuestions = questions.length;
+
+            for (let i = 0; i < maxQuestions; i++) {
+                const questionNumber = i + 1;
+                const selectedOption = document.querySelector(`input[name="question${questionNumber}"]:checked`);
+
+                if (!selectedOption) {
+                    showModal('Por favor, responde a todas las preguntas antes de calificar.');
+                    return;
+                }
+
+                if (selectedOption.value === 'yes') {
+                    // Asignar puntos a las categorías
+                    for (const category in categories) {
+                        if (categories[category].includes(questionNumber)) {
+                            categoryScores[category]++;
+                        }
+                    }
+                }
+            }
+
+            // Mostrar resultados por categoría
+            let resultsHtml = '';
+            for (const category in categoryScores) {
+                const score = categoryScores[category];
+                const percentage = (score / maxQuestionsPerCategory) * 100;
+                const stressResult = interpretStressLevel(percentage);
+
+                resultsHtml += `
+                    <p><strong>${category}:</strong> ${score} pts. (${percentage.toFixed(2)}%)</p>
+                    <p class="stress-level ${stressResult.class}">Nivel de estrés: ${stressResult.text}</p>
+                    <hr class="my-4 border-gray-300">
+                `;
+            }
+            categoryResultsDiv.innerHTML = resultsHtml;
+
+            resultSection.style.display = 'block';
+            resultSection.scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // Inicializar el cuestionario al cargar la página
+        generateQuiz();
+    </script>
+</body>
+</html>
